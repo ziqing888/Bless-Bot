@@ -1,8 +1,5 @@
 const fetch = require('node-fetch');
-
-// API 基本 URL 配置
-const apiBaseUrl = "https://gateway-run.bls.dev/api/v1";
-const ipServiceUrl = "https://tight-block-2413.txlabs.workers.dev";
+const { apiBaseUrl, ipServiceUrl } = require('./config/config.json');
 
 // 注册节点
 async function registerNode(nodeId, hardwareId, authToken) {

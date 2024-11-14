@@ -13,7 +13,7 @@ async function readAuthToken() {
     return data.trim();
 }
 
-// 读取多个文件的内容
+// 读取多个文件的数据
 async function readMultipleFiles() {
     const { nodeId, hardwareId } = await readNodeAndHardwareId();
     const authToken = await readAuthToken();

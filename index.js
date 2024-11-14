@@ -1,6 +1,6 @@
-const { registerNode, startSession, stopSession } = require('./api');
-const { readNodeAndHardwareId, readAuthToken } = require('./fileUtils');
-const { pingNodeWithInterval } = require('./ping');
+const { registerNode, startSession, stopSession } = require('./src/api');
+const { readNodeAndHardwareId, readAuthToken } = require('./src/fileUtils');
+const { pingNodeWithInterval } = require('./src/ping');
 const chalk = require('chalk');
 const inquirer = require('inquirer');
 
@@ -38,3 +38,4 @@ async function runAll() {
 
 // 执行主函数
 runAll();
+

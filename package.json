@@ -1,14 +1,29 @@
 {
   "name": "bless-bot",
   "version": "1.0.0",
-  "description": "自动化节点管理脚本",
-  "main": "src/main.js",
+  "description": "自动化注册与会话管理脚本，支持代理功能",
+  "main": "index.js",
   "scripts": {
-    "start": "node src/main.js"
+    "start": "node index.js",                    
+    "test": "echo \"No tests specified\" && exit 1"  
   },
   "dependencies": {
-    "chalk": "^4.1.2",
-    "inquirer": "^8.2.4",
-    "node-fetch": "^2.6.7"
-  }
+    "chalk": "^4.1.2",                          
+    "node-fetch": "^2.6.1",                     
+    "https-proxy-agent": "^5.0.1",              
+    "readline": "^1.3.0"                         
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"                         
+  },
+  "author": "子清",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ziqing888/bless-bot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ziqing888/bless-bot/issues"
+  },
+  "homepage": "https://github.com/ziqing888/bless-bot"
 }

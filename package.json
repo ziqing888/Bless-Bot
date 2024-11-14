@@ -1,0 +1,15 @@
+{
+  "name": "Bless-node-automation",
+  "version": "1.0.0",
+  "description": "自动化节点注册、会话管理及ping操作",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "chalk": "^5.0.1",
+    "node-fetch": "^3.2.10"
+  },
+  "author": "子清",
+  "license": "MIT"
+}

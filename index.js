@@ -182,7 +182,7 @@ async function run() {
         displayHeader();  
 
         const useProxy = await promptUseProxy(); 
-        const { nodeId, hardwareId } = await readNodeAndHardwareId(); /
+        const { nodeId, hardwareId } = await readNodeAndHardwareId(); 
 
         console.log(`[${new Date().toISOString()}] 读取节点ID: ${nodeId}, 硬件ID: ${hardwareId}`);
 

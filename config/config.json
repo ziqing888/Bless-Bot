@@ -1,0 +1,5 @@
+{
+  "apiBaseUrl": "https://gateway-run.bls.dev/api/v1",
+  "ipServiceUrl": "https://tight-block-2413.txlabs.workers.dev",
+  "authToken": "your_token_here"
+}

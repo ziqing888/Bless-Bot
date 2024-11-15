@@ -12,7 +12,7 @@
 ## 如何安装？
 1. **下载小助手**：将项目克隆到您的本地电脑。
    ```bash
-   git clone https://github.com/your-username/blockless-bless-network-bot.git
+   git clone https://github.com/ziqing888/Bless-Bot.git
     ```
    转到
  ```bash

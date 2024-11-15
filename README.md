@@ -33,7 +33,8 @@ localStorage.getItem('B7S_AUTH_TOKEN')
 下载之后浏览器打开 chrome://extensions/?id=pljbjcehnhcnofmkdbjolghdcjnmekia
 ![image](https://github.com/user-attachments/assets/eb7074be-7520-49e9-8c73-aa51d05f897c)
 接着找到nodeid(pubkey)和hardwareid
-![image](https://github.com/user-attachments/assets/a7cd7812-8d2a-41e7-a858-abf1b6b62764)
+![image](https://github.com/user-attachments/assets/072fac55-d32e-4029-846e-c9329938aeee)
+
 把他们放在id.txt 文件里面
 格式如下
 ```bash

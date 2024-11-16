@@ -43,7 +43,9 @@ localStorage.getItem('B7S_AUTH_TOKEN')
 ```
 如果使用代理在文件proxy.txt编辑
 一个账户最多只能有 5 个 nodeid，且无法删除，我建议保存您账户的 Nodeid（pubkey） 和 hardwareid
-跑代理的要先生成设备公钥和hardwareID
+
+
+跑代理的要先生成设备publicKey和hardwareID
 
 使用命令
 ```bash

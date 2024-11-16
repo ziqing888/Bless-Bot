@@ -39,7 +39,7 @@ localStorage.getItem('B7S_AUTH_TOKEN')
 格式如下
 ```bash
 12D31pubKey：2a59fef6472e7hardwareId
-
+12D3KooWIF5Z2：ebe157ac7357166885b072bb2722fe
 ```
 如果使用代理在文件proxy.txt编辑
 一个账户最多只能有 5 个 nodeid，且无法删除，我建议保存您账户的 Nodeid（pubkey） 和 hardwareid

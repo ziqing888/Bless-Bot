@@ -16,7 +16,7 @@
     ```
    转到
  ```bash
-    cd bless-bot
+ cd Bless-Bot
   ```
 配置与设置 - 小助手专属秘籍 🗝️
 1. 创建 user.txt 文件，把您的令牌 B7S_AUTH_TOKEN 直接贴进去，格式如下：

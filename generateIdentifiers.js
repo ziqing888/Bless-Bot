@@ -1,34 +1,8 @@
-const crypto = require('crypto');
 const fs = require('fs');
 const readline = require('readline');
+const crypto = require('crypto');
 
-// 随机生成硬件标识符
-function getRandomHardwareIdentifier() {
-    const randomCpuArchitecture = Math.random() > 0.5 ? 'x64' : 'x86';
-    const randomCpuModel = `虚拟 CPU 型号 ${Math.floor(Math.random() * 1000)}`;
-    const randomNumOfProcessors = Math.floor(Math.random() * 8) + 1;
-    const randomTotalMemory = Math.floor(Math.random() * 16 + 1) * 1024 * 1024 * 1024;
-
-    const cpuInfo = {
-        cpuArchitecture: randomCpuArchitecture,
-        cpuModel: randomCpuModel,
-        numOfProcessors: randomNumOfProcessors,
-        totalMemory: randomTotalMemory,
-    };
-
-    return Buffer.from(JSON.stringify(cpuInfo)).toString('base64');
-}
-
-// 生成设备标识符
-async function generateDeviceIdentifier() {
-    const hardwareIdentifier = getRandomHardwareIdentifier();
-    const deviceInfo = JSON.stringify({ hardware: hardwareIdentifier });
-    const hash = crypto.createHash('sha256');
-    hash.update(deviceInfo);
-    return hash.digest('hex');
-}
-
-// 生成公钥
+// 随机生成公钥
 function generatePubKey(length = 52) {
     const prefix = "12D3KooW";
     const remainingLength = length - prefix.length;
@@ -38,63 +12,91 @@ function generatePubKey(length = 52) {
     ).join('');
 }
 
-// 保存生成的数据到文件
+// 随机生成 Mac 设备标识符
+function generateMacDeviceInfo() {
+    const macModels = ['MacBookPro15,1', 'MacBookAir10,1', 'MacMini9,1', 'iMac20,1', 'MacPro7,1'];
+    const macOSVersions = ['macOS 12.6 Monterey', 'macOS 13.0 Ventura', 'macOS 11.7 Big Sur'];
+    const cpuTypes = ['Apple M1', 'Apple M2', 'Intel Core i5', 'Intel Core i7', 'Intel Core i9'];
+    const memoryOptions = [8, 16, 32, 64];
+    const storageOptions = [256, 512, 1024, 2048];
+    const screenResolutions = ['2560x1600', '2880x1800', '3072x1920'];
+
+    const model = macModels[Math.floor(Math.random() * macModels.length)];
+    const macOS = macOSVersions[Math.floor(Math.random() * macOSVersions.length)];
+    const cpu = cpuTypes[Math.floor(Math.random() * cpuTypes.length)];
+    const memory = memoryOptions[Math.floor(Math.random() * memoryOptions.length)];
+    const storage = storageOptions[Math.floor(Math.random() * storageOptions.length)];
+    const resolution = screenResolutions[Math.floor(Math.random() * screenResolutions.length)];
+    const battery = `${Math.floor(Math.random() * 100)}%`;
+    const publicKey = generatePubKey();
+
+    const hardwareInfo = {
+        model,
+        macOS,
+        cpu,
+        memory: `${memory}GB`,
+        storage: `${storage}GB`,
+        resolution,
+        battery,
+        retina: resolution === '2560x1600' || resolution === '2880x1800',
+    };
+
+    const hardwareID = generateHardwareID(hardwareInfo);
+
+    return {
+        ...hardwareInfo,
+        publicKey,
+        hardwareID,
+    };
+}
+
+// 基于硬件信息生成 Hardware ID
+function generateHardwareID(hardwareInfo) {
+    const hardwareString = JSON.stringify(hardwareInfo);
+    const hash = crypto.createHash('sha256');
+    hash.update(hardwareString);
+    return hash.digest('hex');
+}
+
+// 保存到文件
 function saveToFile(filename, data) {
     try {
         fs.writeFileSync(filename, data);
-        return true;
+        console.log(`✅ 数据已保存到 ${filename}`);
     } catch (error) {
-        console.error(`保存到文件失败：${error.message}`);
-        return false;
+        console.error(`❌ 保存到文件失败：${error.message}`);
     }
 }
 
 // 主函数
-async function main() {
-    const chalk = (await import('chalk')).default;
-
-    console.log(chalk.red.bold('⚠️ 仅供测试用途，不建议在生产环境中使用 ⚠️'));
-
+function main() {
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout,
     });
 
-    rl.question(chalk.cyan('请输入要生成的标识符数量：'), async (answer) => {
+    rl.question('请输入要生成的 Mac 设备数量：', (answer) => {
         const total = parseInt(answer, 10);
 
         if (isNaN(total) || total <= 0) {
-            console.log(chalk.red('❌ 输入的数量无效，请输入一个正整数！'));
+            console.error('❌ 请输入一个有效的设备数量！');
             rl.close();
             return;
         }
 
-        console.log(chalk.green(`开始生成 ${total} 个标识符...\n`));
         let output = '';
+        console.log(`开始生成 ${total} 台 Mac 设备信息...\n`);
 
         for (let i = 0; i < total; i++) {
-            try {
-                const deviceIdentifier = await generateDeviceIdentifier();
-                const publicKey = generatePubKey();
+            const deviceInfo = generateMacDeviceInfo();
+            console.log(`设备 ${i + 1}:\n`, deviceInfo);
 
-                const logEntry = `设备标识符 ${i + 1}: ${chalk.green(deviceIdentifier)}\n公钥 ${i + 1}: ${chalk.blue(publicKey)}\n`;
-                const formattedEntry = `${publicKey}:${deviceIdentifier}\n`;
-
-                output += formattedEntry;
-                console.log(logEntry);
-            } catch (error) {
-                console.error(chalk.red(`生成标识符时出错：${error.message}`));
-            }
+            output += `设备 ${i + 1}:\n${JSON.stringify(deviceInfo, null, 2)}\n\n`;
         }
 
-        const isSaved = saveToFile('output.txt', output);
-        if (isSaved) {
-            console.log(chalk.yellow('✅ 数据已成功保存到 output.txt 文件中'));
-        }
-
+        saveToFile('mac_devices.txt', output);
         rl.close();
     });
 }
 
 main();
-

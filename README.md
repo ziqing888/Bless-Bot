@@ -45,4 +45,7 @@ localStorage.getItem('B7S_AUTH_TOKEN')
 一个账户最多只能有 5 个 nodeid，且无法删除，我建议保存您账户的 Nodeid（pubkey） 和 hardwareid
 跑代理的要先生成设备公钥和hardwareID
 
-使用node 
+使用命令
+```bash
+node generate_mac.js
+ ```

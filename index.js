@@ -1,3 +1,4 @@
+
 const fs = require('fs').promises;
 const { HttpsProxyAgent } = require('https-proxy-agent');
 const readline = require('readline');
@@ -35,36 +36,50 @@ async function loadFetch() {
   return fetch;
 }
 
-// 读取代理配置
-async function readProxy() {
+// 提示用户是否使用代理
+async function promptUseProxy() {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  return new Promise(resolve => {
+    rl.question('是否使用代理？（y/n）：', answer => {
+      rl.close();
+      resolve(answer.trim().toLowerCase() === 'y');
+    });
+  });
+}
+
+// 读取代理列表
+async function readProxies() {
   try {
     const data = await fs.readFile('proxy.txt', 'utf-8');
     const proxies = data.trim().split('\n').filter(proxy => proxy);
-    if (proxies.length === 0) {
-      logTimestamped("呜呜，没有找到代理，继续直接工作啦～", colors.info);
-      return null;
-    }
-    const randomProxy = proxies[Math.floor(Math.random() * proxies.length)];
-    logTimestamped(`正在使用代理哦，代理地址是: ${colors.ip(randomProxy)}`);
-    return randomProxy;
+    logTimestamped(`读取到 ${proxies.length} 个代理配置。`, colors.info);
+    return proxies;
   } catch (error) {
-    logTimestamped(`哎呀～读取代理文件时出错了: ${error.message}`, colors.error);
-    return null;
+    logTimestamped(`读取代理文件失败: ${error.message}`, colors.error);
+    return [];
   }
 }
 
-const apiBaseUrl = "https://gateway-run.bls.dev/api/v1";
-const ipServiceUrl = "https://tight-block-2413.txlabs.workers.dev";
-
-// 读取节点和硬件ID
-async function readNodeAndHardwareId() {
+// 读取节点和硬件ID列表
+async function readNodeAndHardwareIds() {
   try {
     const data = await fs.readFile('id.txt', 'utf-8');
-    const [nodeId, hardwareId] = data.trim().split(':');
-    logTimestamped(`主人，找到你的节点ID啦～ID: ${colors.id(nodeId)}, 硬件ID: ${colors.id(hardwareId)}`);
-    return { nodeId, hardwareId };
+    const ids = data
+      .trim()
+      .split('\n')
+      .filter(line => line)
+      .map(line => {
+        const [nodeId, hardwareId] = line.split(':');
+        return { nodeId, hardwareId };
+      });
+    logTimestamped(`读取到 ${ids.length} 个节点配置。`, colors.info);
+    return ids;
   } catch (error) {
-    logTimestamped(`唔...读取ID文件时遇到了困难: ${error.message}`, colors.error);
+    logTimestamped(`读取节点配置文件失败: ${error.message}`, colors.error);
     throw error;
   }
 }
@@ -75,129 +90,7 @@ async function readAuthToken() {
     const data = await fs.readFile('user.txt', 'utf-8');
     return data.trim();
   } catch (error) {
-    logTimestamped(`唔...读取用户授权文件时出错了: ${error.message}`, colors.error);
-    throw error;
-  }
-}
-
-// 提示是否使用代理
-async function promptUseProxy() {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
-
-  return new Promise(resolve => {
-    rl.question('要用代理吗？（y/n）: ', answer => {
-      rl.close();
-      resolve(answer.toLowerCase() === 'y');
-    });
-  });
-}
-
-// 注册节点
-async function registerNode(nodeId, hardwareId, useProxy) {
-  const fetch = await loadFetch();
-  const authToken = await readAuthToken();
-  let agent;
-
-  if (useProxy) {
-    const proxy = await readProxy();
-    if (proxy) agent = new HttpsProxyAgent(proxy);
-  }
-
-  const registerUrl = `${apiBaseUrl}/nodes/${nodeId}`;
-  const ipAddress = await fetchIpAddress(fetch, agent);
-  logTimestamped(`正在为主人注册节点，IP地址是: ${colors.ip(ipAddress)}，硬件ID: ${colors.id(hardwareId)}，请稍等哦～`, colors.info);
-
-  try {
-    const response = await fetch(registerUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${authToken}`
-      },
-      body: JSON.stringify({
-        ipAddress,
-        hardwareId
-      }),
-      agent
-    });
-
-    const data = await response.json();
-    logTimestamped(`主人，节点注册成功啦！🎉 这里是返回的信息哦: ${JSON.stringify(data, null, 2)}`, colors.success);
-    return data;
-  } catch (error) {
-    logTimestamped(`哎呀，注册节点时遇到了错误: ${error.message}`, colors.error);
-    throw error;
-  }
-}
-
-// 启动节点会话
-async function startSession(nodeId, useProxy) {
-  const fetch = await loadFetch();
-  const authToken = await readAuthToken();
-  let agent;
-
-  if (useProxy) {
-    const proxy = await readProxy();
-    if (proxy) agent = new HttpsProxyAgent(proxy);
-  }
-
-  const startSessionUrl = `${apiBaseUrl}/nodes/${nodeId}/start-session`;
-  logTimestamped(`开始为节点 ${colors.id(nodeId)} 启动会话哦，请稍等片刻～`, colors.info);
-
-  try {
-    const response = await fetch(startSessionUrl, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${authToken}`
-      },
-      agent
-    });
-
-    const data = await response.json();
-    logTimestamped(`会话启动成功啦，主人！🎉 哇哦，这是返回的信息: ${JSON.stringify(data, null, 2)}`, colors.success);
-    return data;
-  } catch (error) {
-    logTimestamped(`呜呜，启动会话时遇到了问题: ${error.message}`, colors.error);
-    throw error;
-  }
-}
-
-// ping 节点
-async function pingNode(nodeId, useProxy) {
-  const fetch = await loadFetch();
-  const authToken = await readAuthToken();
-  let agent;
-
-  if (useProxy) {
-    const proxy = await readProxy();
-    if (proxy) agent = new HttpsProxyAgent(proxy);
-  }
-
-  const pingUrl = `${apiBaseUrl}/nodes/${nodeId}/ping`;
-  logTimestamped(`对你的电脑 ${colors.id(nodeId)} 进行狂轰乱炸...`, colors.info);
-
-  try {
-    const response = await fetch(pingUrl, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${authToken}`
-      },
-      agent
-    });
-
-    const data = await response.json();
-    if (data.pings && Array.isArray(data.pings) && data.pings.length > 0) {
-      const lastPing = data.pings[data.pings.length - 1].timestamp;
-      logTimestamped(`发射成功啦！节点ID: ${colors.id(nodeId)}, 上次发射时间是: ${colors.info(lastPing)}`, colors.success);
-    } else {
-      logTimestamped("嗯...没有ping数据返回呢", colors.info);
-    }
-    return data;
-  } catch (error) {
-    logTimestamped(`ping节点时出现了问题呢: ${error.message}`, colors.error);
+    logTimestamped(`读取授权令牌失败: ${error.message}`, colors.error);
     throw error;
   }
 }
@@ -205,13 +98,96 @@ async function pingNode(nodeId, useProxy) {
 // 获取IP地址
 async function fetchIpAddress(fetch, agent) {
   try {
-    const response = await fetch(ipServiceUrl, { agent });
+    const response = await fetch('https://tight-block-2413.txlabs.workers.dev', { agent });
     const data = await response.json();
-    logTimestamped(`哇哦，获取到了IP地址: ${colors.ip(data.ip)}`, colors.ip);
+    logTimestamped(`获取到IP地址: ${colors.ip(data.ip)}`, colors.success);
     return data.ip;
   } catch (error) {
-    logTimestamped(`获取IP地址时遇到了问题: ${error.message}`, colors.error);
+    logTimestamped(`获取IP地址失败: ${error.message}`, colors.error);
     throw error;
+  }
+}
+
+// 注册节点
+async function registerNode(fetch, nodeId, hardwareId, authToken, ipAddress, agent) {
+  const registerUrl = `https://gateway-run.bls.dev/api/v1/nodes/${nodeId}`;
+  logTimestamped(`注册节点 ${colors.id(nodeId)}，硬件ID: ${colors.id(hardwareId)}，IP地址: ${colors.ip(ipAddress)}`, colors.info);
+
+  try {
+    const response = await fetch(registerUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`,
+      },
+      body: JSON.stringify({ ipAddress, hardwareId }),
+      agent,
+    });
+
+    const data = await response.json();
+    logTimestamped(`节点注册成功: ${JSON.stringify(data, null, 2)}`, colors.success);
+    return data;
+  } catch (error) {
+    logTimestamped(`节点注册失败: ${error.message}`, colors.error);
+    throw error;
+  }
+}
+
+// 启动会话
+async function startSession(fetch, nodeId, authToken, agent) {
+  const sessionUrl = `https://gateway-run.bls.dev/api/v1/nodes/${nodeId}/start-session`;
+  logTimestamped(`启动会话: ${colors.id(nodeId)}`, colors.info);
+
+  try {
+    const response = await fetch(sessionUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+      agent,
+    });
+
+    const data = await response.json();
+    logTimestamped(`会话启动成功: ${JSON.stringify(data, null, 2)}`, colors.success);
+    return data;
+  } catch (error) {
+    logTimestamped(`启动会话失败: ${error.message}`, colors.error);
+    throw error;
+  }
+}
+
+// ping 节点
+async function pingNode(fetch, nodeId, authToken, agent) {
+  const pingUrl = `https://gateway-run.bls.dev/api/v1/nodes/${nodeId}/ping`;
+  logTimestamped(`Ping节点: ${colors.id(nodeId)}`, colors.info);
+
+  try {
+    const response = await fetch(pingUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+      agent,
+    });
+
+    const data = await response.json();
+    logTimestamped(`Ping成功: ${JSON.stringify(data, null, 2)}`, colors.success);
+    return data;
+  } catch (error) {
+    logTimestamped(`Ping失败: ${error.message}`, colors.error);
+    throw error;
+  }
+}
+
+// 处理单个节点
+async function processNode(fetch, nodeId, hardwareId, authToken, proxy, agent) {
+  try {
+    const ipAddress = await fetchIpAddress(fetch, agent);
+    await registerNode(fetch, nodeId, hardwareId, authToken, ipAddress, agent);
+    await startSession(fetch, nodeId, authToken, agent);
+    setInterval(() => pingNode(fetch, nodeId, authToken, agent), 60 * 1000);
+  } catch (error) {
+    logTimestamped(`节点 ${nodeId} 处理失败: ${error.message}`, colors.error);
   }
 }
 
@@ -221,23 +197,25 @@ async function run() {
     displayHeader();
 
     const useProxy = await promptUseProxy();
-    const { nodeId, hardwareId } = await readNodeAndHardwareId();
+    const fetch = await loadFetch();
+    const authToken = await readAuthToken();
+    const ids = await readNodeAndHardwareIds();
+    const proxies = await readProxies();
 
-    const registrationResponse = await registerNode(nodeId, hardwareId, useProxy);
-    logTimestamped(`节点注册完成，开始工作啦～💪 ${JSON.stringify(registrationResponse, null, 2)}`, colors.success);
+    if (useProxy && proxies.length !== ids.length) {
+      logTimestamped('代理数量与节点数量不匹配，请检查配置文件！', colors.error);
+      return;
+    }
 
-    const startSessionResponse = await startSession(nodeId, useProxy);
-    logTimestamped(`会话启动完成，工作顺利进行中！💨 ${JSON.stringify(startSessionResponse, null, 2)}`, colors.success);
-
-    logTimestamped("首次发射检测开始咯～请稍候...", colors.info);
-    await pingNode(nodeId, useProxy);
-
-    setInterval(async () => {
-      logTimestamped("好累，但是我还要努力为主人工作...", colors.info);
-      await pingNode(nodeId, useProxy);
-    }, 60 * 1000);  // 每分钟ping一次
+    await Promise.all(
+      ids.map((id, index) => {
+        const proxy = useProxy ? proxies[index] : null;
+        const agent = proxy ? new HttpsProxyAgent(proxy) : null;
+        return processNode(fetch, id.nodeId, id.hardwareId, authToken, proxy, agent);
+      })
+    );
   } catch (error) {
-    logTimestamped(`哎呀，执行过程中发生了问题: ${error.message}`, colors.error);
+    logTimestamped(`运行失败: ${error.message}`, colors.error);
   }
 }
 

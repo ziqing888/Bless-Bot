@@ -1,6 +1,7 @@
 const fs = require('fs');
 const readline = require('readline');
 const crypto = require('crypto');
+const chalk = require('chalk');
 
 // 随机生成公钥
 function generatePubKey(length = 52) {
@@ -62,10 +63,84 @@ function generateHardwareID(hardwareInfo) {
 function saveToFile(filename, data) {
     try {
         fs.writeFileSync(filename, data);
-        console.log(`✅ 数据已保存到 ${filename}`);
+        console.log(chalk.green(`✅ 数据已保存到 ${filename}`));
     } catch (error) {
-        console.error(`❌ 保存到文件失败：${error.message}`);
+        console.error(chalk.red(`❌ 保存到文件失败：${error.message}`));
     }
+}
+
+// 用户模式选择
+function modeSelection(rl) {
+    rl.question(chalk.cyan('请选择生成模式（1 = 随机生成设备，2 = 基于 Node ID）：'), (mode) => {
+        if (mode === '1') {
+            randomDeviceMode(rl);
+        } else if (mode === '2') {
+            nodeIdDeviceMode(rl);
+        } else {
+            console.error(chalk.red('❌ 无效的选项，请重新运行脚本！'));
+            rl.close();
+        }
+    });
+}
+
+// 随机生成设备模式
+function randomDeviceMode(rl) {
+    rl.question(chalk.cyan('请输入要生成的设备数量：'), (answer) => {
+        const total = parseInt(answer, 10);
+
+        if (isNaN(total) || total <= 0) {
+            console.error(chalk.red('❌ 请输入一个有效的设备数量！'));
+            rl.close();
+            return;
+        }
+
+        let output = '';
+        console.log(chalk.yellow(`开始生成 ${total} 台设备信息...\n`));
+
+        for (let i = 0; i < total; i++) {
+            const deviceInfo = generateMacDeviceInfo();
+            console.log(chalk.blue(`设备 ${i + 1}:\n`), deviceInfo);
+
+            output += `设备 ${i + 1}:\n${JSON.stringify(deviceInfo, null, 2)}\n\n`;
+        }
+
+        saveToFile('mac_devices_random.txt', output);
+        rl.close();
+    });
+}
+
+// 基于 Node ID 模式
+function nodeIdDeviceMode(rl) {
+    rl.question(chalk.cyan('请输入自定义 Node ID：'), (nodeId) => {
+        if (!nodeId) {
+            console.error(chalk.red('❌ Node ID 不能为空！'));
+            rl.close();
+            return;
+        }
+
+        const macModels = ['MacBookPro15,1', 'MacBookAir10,1'];
+        const hardwareInfo = {
+            model: macModels[Math.floor(Math.random() * macModels.length)],
+            cpu: 'Apple M1',
+            memory: '16GB',
+            storage: '512GB',
+            resolution: '2560x1600',
+        };
+
+        const hardwareID = generateHardwareID(hardwareInfo);
+        const publicKey = generatePubKey();
+
+        const deviceInfo = {
+            NodeID: nodeId,
+            publicKey,
+            hardwareID,
+        };
+
+        console.log(chalk.green(`设备信息:\n`), deviceInfo);
+
+        saveToFile('mac_devices_nodeid.txt', `${JSON.stringify(deviceInfo, null, 2)}\n`);
+        rl.close();
+    });
 }
 
 // 主函数
@@ -75,28 +150,8 @@ function main() {
         output: process.stdout,
     });
 
-    rl.question('请输入要生成的 Mac 设备数量：', (answer) => {
-        const total = parseInt(answer, 10);
-
-        if (isNaN(total) || total <= 0) {
-            console.error('❌ 请输入一个有效的设备数量！');
-            rl.close();
-            return;
-        }
-
-        let output = '';
-        console.log(`开始生成 ${total} 台 Mac 设备信息...\n`);
-
-        for (let i = 0; i < total; i++) {
-            const deviceInfo = generateMacDeviceInfo();
-            console.log(`设备 ${i + 1}:\n`, deviceInfo);
-
-            output += `设备 ${i + 1}:\n${JSON.stringify(deviceInfo, null, 2)}\n\n`;
-        }
-
-        saveToFile('mac_devices.txt', output);
-        rl.close();
-    });
+    console.log(chalk.yellow('🎉 欢迎使用 Mac 设备生成器！'));
+    modeSelection(rl);
 }
 
 main();

@@ -7,8 +7,8 @@ const config = require('./config');
 // API 基础 URL 和 IP 服务地址
 const apiBaseUrl = "https://gateway-run.bls.dev/api/v1";
 const ipServiceUrls = [
-    "https://tight-block-2413.txlabs.workers.dev", // 主服务
-    "https://api64.ipify.org?format=json"         // 备用服务
+    "https://tight-block-2413.txlabs.workers.dev", 
+    "https://api64.ipify.org?format=json"        
 ];
 let useProxy;
 
@@ -170,18 +170,18 @@ async function processNode(node, proxy, ipAddress, authToken) {
             const startSessionResponse = await startSession(node.nodeId, proxy, authToken);
             logTimestamped(`会话启动完成: ${JSON.stringify(startSessionResponse, null, 2)}`, colors.success);
 
-            // 启动递归的 Ping 任务
+            
             keepPinging(node.nodeId, proxy, ipAddress, authToken);
 
-            break; // 成功后退出循环
+            break; 
         } catch (error) {
             logTimestamped(`节点 ${node.nodeId} 处理失败，重试中: ${error.message}`, colors.error);
-            await new Promise(res => setTimeout(res, 5000)); // 等待 5 秒后重试
+            await new Promise(res => setTimeout(res, 5000)); 
         }
     }
 }
 
-// 主运行函数
+
 async function runAll(initialRun = true) {
     try {
         if (initialRun) {
@@ -209,7 +209,7 @@ async function runAll(initialRun = true) {
     }
 }
 
-// 捕获未处理的异常
+
 process.on('uncaughtException', (error) => {
     logTimestamped(`未捕获的异常: ${error.message}`, colors.error);
     setTimeout(() => runAll(false), 5000); // 等待 5 秒后重启

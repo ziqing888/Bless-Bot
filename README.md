@@ -34,7 +34,9 @@ localStorage.getItem('B7S_AUTH_TOKEN')
 ![image](https://github.com/user-attachments/assets/eb7074be-7520-49e9-8c73-aa51d05f897c)
 接着找到nodeid(pubkey)和hardwareid
 ![image](https://github.com/user-attachments/assets/072fac55-d32e-4029-846e-c9329938aeee)
+
  可选：配置代理
+
 如果需要为节点配置代理，可以在 config.js 中添加代理地址。例如：
 ```bash
 module.exports = [

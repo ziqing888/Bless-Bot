@@ -34,17 +34,46 @@ localStorage.getItem('B7S_AUTH_TOKEN')
 ![image](https://github.com/user-attachments/assets/eb7074be-7520-49e9-8c73-aa51d05f897c)
 接着找到nodeid(pubkey)和hardwareid
 ![image](https://github.com/user-attachments/assets/072fac55-d32e-4029-846e-c9329938aeee)
-
-把他们放在id.txt 文件里面
-格式如下
+ 可选：配置代理
+如果需要为节点配置代理，可以在 config.js 中添加代理地址。例如：
 ```bash
-12D31pubKey：2a59fef6472e7hardwareId
-12D3KooWIF5Z2：ebe157ac7357166885b072bb2722fe
+module.exports = [
+    {
+        usertoken: 'usertoken1',
+        nodes: [
+            { nodeId: 'nodeid(pubkey)1', hardwareId: 'hardwareid1', proxy: 'proxy1' },
+            { nodeId: 'nodeid(pubkey)2', hardwareId: 'hardwareid2', proxy: 'proxy2' },
+            { nodeId: 'nodeid(pubkey)3', hardwareId: 'hardwareid3', proxy: 'proxy3' },
+            { nodeId: 'nodeid(pubkey)4', hardwareId: 'hardwareid4', proxy: 'proxy4' },
+            { nodeId: 'nodeid(pubkey)5', hardwareId: 'hardwareid5', proxy: 'proxy5' }
+        ]
+    },
+    {
+        usertoken: 'usertoken2',
+        nodes: [
+            { nodeId: 'nodeid(pubkey)6', hardwareId: 'hardwareid6', proxy: 'proxy6' }
+        ]
+    }
+    // 添加更多的用户
+];
 ```
-如果使用代理在文件proxy.txt编辑
-一个账户最多只能有 5 个 nodeid，且无法删除，我建议保存您账户的 Nodeid（pubkey） 和 hardwareid
 
+## 重要说明
+每个账户最多可注册 5 个节点 ID。
 
+节点 ID 和硬件 ID 无法删除，请妥善保存。
+
+连接会每 10 分钟刷新一次。
+
+##运行脚本
+```bash
+node index.js
+```
+代理格式
+```
+http://user123:password123@192.168.1.100:8080
+socks5://user123:password123@192.168.1.100:1080
+```
 跑代理的要先生成设备publicKey和hardwareID
 
 使用命令

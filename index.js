@@ -14,15 +14,28 @@ let useProxy;
 
 // 颜色和日志工具
 const colors = {
-    header: chalk.hex('#FFD700'),
-    info: chalk.hex('#87CEEB'),
-    success: chalk.hex('#32CD32'),
-    error: chalk.hex('#FF6347'),
-    timestamp: chalk.hex('#4682B4'),
-    id: chalk.hex('#FF69B4'),
-    ip: chalk.hex('#9370DB'),
+    // 基础样式
+    reset: chalk.reset,
+    bright: chalk.bold,
+    dim: chalk.dim,
+
+    // 动态颜色生成
+    dynamic: (hex) => chalk.hex(hex),
+
+    // 消息类型颜色
+    success: chalk.greenBright,
+    error: chalk.redBright,
+    warning: chalk.yellowBright,
+    info: chalk.cyanBright,
+
+    // 特殊颜色
+    header: chalk.hex('#FFD700'), // 金色
+    timestamp: chalk.hex('#4682B4'), // 钢蓝色
+    id: chalk.hex('#FF69B4'), // 粉红色
+    ip: chalk.hex('#9370DB'), // 紫色
 };
 
+// 日志函数
 function logTimestamped(message, style = colors.info) {
     console.log(`${colors.timestamp(`[${new Date().toISOString()}]`)} ${style(message)}`);
 }
@@ -36,6 +49,8 @@ function displayHeader() {
     console.log(colors.header('╚════════════════════════════════════════╝'));
     console.log();
 }
+
+
 
 // 提示用户是否使用代理
 async function promptUseProxy() {

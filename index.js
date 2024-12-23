@@ -9,13 +9,13 @@ const config = require('./config');
 const apiBaseUrl = "https://gateway-run.bls.dev/api/v1";
 let useProxy;
 const MAX_PING_ERRORS = 3;
-const pingInterval = 120000;  // 每两分钟执行一次 ping
-const restartDelay = 240000;  // 240秒（4分钟）后重启
-const processRestartDelay = 150000;  // 150秒后重新启动进程
-const retryDelay = 150000;  // 150秒重试延迟
+const pingInterval = 120000;  
+const restartDelay = 240000;  
+const processRestartDelay = 150000;  
+const retryDelay = 150000; 
 const hardwareInfoFile = path.join(__dirname, 'hardwareInfo.json');
 
-// 定义颜色样式
+
 const colors = {
     reset: chalk.reset,
     bright: chalk.bold,
@@ -31,7 +31,7 @@ const colors = {
     ip: chalk.hex('#9370DB'),
 };
 
-// 日志输出函数
+
 function logStyled(message, style = colors.info, prefix = '', suffix = '') {
     console.log(`${colors.timestamp(`[${new Date().toISOString()}]`)} ${prefix}${style(message)}${suffix}`);
 }
@@ -66,16 +66,16 @@ async function promptUseProxy() {
     });
 }
 
-// 动态加载 fetch 模块
+
 async function loadFetch() {
     const fetch = await import('node-fetch').then(module => module.default);
     return fetch;
 }
 
-// 获取 IP 地址（带备用服务）
+
 const ipServiceUrls = [
-    "https://ip-check.bls.dev/api/v1/ip",  // 主URL，假设
-    "https://api.ipify.org?format=json"     // 备用URL
+    "https://ip-check.bls.dev/api/v1/ip",  
+    "https://api.ipify.org?format=json"   
 ];
 
 async function fetchIpAddressWithFallback(fetch, agent = null) {
@@ -92,11 +92,11 @@ async function fetchIpAddressWithFallback(fetch, agent = null) {
     throw new Error("所有 IP 服务都不可用");
 }
 
-// 公共的请求头
+
 const commonHeaders = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-    "Accept-Language": "zh-CN,zh;q=0.5"  // 修改为中文
+    "Accept-Language": "zh-CN,zh;q=0.5"  
 };
 
 function generateRandomHardwareInfo() {
@@ -662,7 +662,6 @@ function generateRandomHardwareInfo() {
     };
 }
 
-// 加载硬件信息
 async function loadHardwareInfo() {
     try {
         const data = await fs.readFile(hardwareInfoFile, 'utf8');
@@ -672,12 +671,11 @@ async function loadHardwareInfo() {
     }
 }
 
-// 保存硬件信息
 async function saveHardwareInfo(hardwareInfo) {
     await fs.writeFile(hardwareInfoFile, JSON.stringify(hardwareInfo, null, 2));
 }
 
-// 注册节点
+
 async function registerNode(nodeId, hardwareId, ipAddress, proxy, authToken) {
     const fetch = await loadFetch();
     const agent = proxy ? (proxy.startsWith('socks') ? new SocksProxyAgent(proxy) : new HttpsProxyAgent(proxy)) : null;
@@ -716,7 +714,7 @@ async function registerNode(nodeId, hardwareId, ipAddress, proxy, authToken) {
     }
 }
 
-// 启动会话
+
 async function startSession(nodeId, proxy, authToken) {
     const fetch = await loadFetch();
     const agent = proxy ? (proxy.startsWith('socks') ? new SocksProxyAgent(proxy) : new HttpsProxyAgent(proxy)) : null;
@@ -741,7 +739,7 @@ async function startSession(nodeId, proxy, authToken) {
     }
 }
 
-// Ping节点
+
 async function pingNode(nodeId, proxy, ipAddress, authToken, pingErrorCount) {
     const fetch = await loadFetch();
     const agent = proxy ? (proxy.startsWith('socks') ? new SocksProxyAgent(proxy) : new HttpsProxyAgent(proxy)) : null;
@@ -777,7 +775,7 @@ async function pingNode(nodeId, proxy, ipAddress, authToken, pingErrorCount) {
 const activeNodes = new Set();
 const nodeIntervals = new Map();
 
-// 处理单个节点
+
 async function processNode(node, proxy, ipAddress, authToken) {
     const pingErrorCount = {};
     let intervalId = null;
@@ -838,7 +836,7 @@ async function processNode(node, proxy, ipAddress, authToken) {
     }
 }
 
-// 运行所有节点
+
 async function runAll(initialRun = true) {
     try {
         if (initialRun) {
@@ -852,7 +850,7 @@ async function runAll(initialRun = true) {
 
         let hardwareInfo = await loadHardwareInfo();
 
-        // 确保所有节点都有硬件信息
+
         config.forEach(user => {
             user.nodes.forEach(node => {
                 if (!hardwareInfo[node.nodeId]) {
@@ -903,11 +901,10 @@ async function runAll(initialRun = true) {
     }
 }
 
-// 处理未捕获的异常
 process.on('uncaughtException', (error) => {
     logStyled(`未捕获的异常: ${error.message}`, colors.error, '', ' ❌');
     setTimeout(() => runAll(false), 5000);
 });
 
-// 启动脚本
+
 runAll();

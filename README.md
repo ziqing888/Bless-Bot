@@ -76,7 +76,7 @@ node index.js
 http://user123:password123@192.168.1.100:8080
 socks5://user123:password123@192.168.1.100:1080
 ```
-跑代理的要先生成设备publicKey和hardwareID
+跑代理的可以使用下面命令获取hardwareID  ， publicKey 需要在每次重复安装扩展来获取， 复制一个后删除插件，重新安装，再复制，直到5个
 
 使用命令
 ```bash
